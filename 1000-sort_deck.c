@@ -1,134 +1,94 @@
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include "deck.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 /**
- * struct deck_node_s - Doubly-linked list node for a card deck
- *
- * @card: Pointer to the card (a string)
- * @prev: Pointer to the previous node in the deck
- * @next: Pointer to the next node in the deck
- */
-typedef struct deck_node_s
+* get_val - gets value of a card from it's string value
+* @str:  value of the card
+*
+* Return: relative value of the card (0 through 12)
+*/
+int get_val(const char *str)
 {
-    const card_t *card;
-    struct deck_node_s *prev;
-    struct deck_node_s *next;
-} deck_node_t;
+	int i;
+	char *array[13] = {"Ace", "2", "3", "4", "5", "6", "7", "8", "9",
+			"10", "Jack", "Queen", "King"};
+
+	for (i = 0; i < 13; i++)
+	{
+		if (strcmp(str, array[i]) == 0)
+		{
+			return (i);
+		}
+	}
+	exit(1);
+}
 
 /**
- * card_t - Typedef for struct card_s
- */
-typedef struct card_s card_t;
-
-/**
- * struct card_s - Structure representing a card
- *
- * @value: Value of the card (0-13, with 0 representing "King" for a joker card)
- * @kind: Kind of the card (One of "SPADE", "HEART", "CLUB", "DIAMOND")
- */
-struct card_s
+* swap_node - swaps a node with
+* @list: double pointer
+* @node: node to be swaped
+*
+* Return: void
+*/
+void swap_node(deck_node_t **list, deck_node_t *node)
 {
-    const char *value;
-    const char *kind;
-};
+	node->next->prev = node->prev;
+	if (node->prev)
+		node->prev->next = node->next;
+	else
+		*list = node->next;
+	node->prev = node->next;
+	node->next = node->next->next;
+	node->prev->next = node;
+	if (node->next)
+		node->next->prev = node;
+}
 
 /**
- * sort_deck - Sorts a deck of cards
- *
- * @deck: Pointer to the head of the deck
- */
+* sort_deck - sorts a linked list deck of cards
+* @deck: double pointer to the deck to sort
+*
+* Return: void
+*/
 void sort_deck(deck_node_t **deck)
 {
-    if (deck == NULL || *deck == NULL)
-        return;
+	char swapped = 1, c1, c2;
+	deck_node_t *current;
 
-    size_t deck_size = 0;
-    deck_node_t *current = *deck;
-
-    // Calculate the size of the deck
-    while (current)
-    {
-        deck_size++;
-        current = current->next;
-    }
-
-    // Convert the deck to an array for sorting
-    card_t **card_array = malloc(sizeof(card_t *) * deck_size);
-    if (card_array == NULL)
-    {
-        perror("Memory allocation error");
-        exit(EXIT_FAILURE);
-    }
-
-    current = *deck;
-    for (size_t i = 0; i < deck_size; i++)
-    {
-        card_array[i] = current->card;
-        current = current->next;
-    }
-
-    // Use the qsort function to sort the card array
-    qsort(card_array, deck_size, sizeof(card_t *), compare_cards);
-
-    // Update the deck with the sorted cards
-    current = *deck;
-    for (size_t i = 0; i < deck_size; i++)
-    {
-        current->card = card_array[i];
-        current = current->next;
-    }
-
-    free(card_array);
-}
-
-/**
- * compare_cards - Comparison function for qsort
- *
- * @card1: Pointer to the first card
- * @card2: Pointer to the second card
- * Return: Integer less than, equal to, or greater than zero if card1
- *         is found, respectively, to be less than, to match, or be greater
- *         than card2.
- */
-int compare_cards(const void *card1, const void *card2)
-{
-    card_t *c1 = *(card_t **)card1;
-    card_t *c2 = *(card_t **)card2;
-
-    // Compare values first
-    int value_diff = get_card_value(c1) - get_card_value(c2);
-
-    if (value_diff == 0)
-    {
-        // If values are equal, compare kinds
-        return get_kind_index(c1->kind) - get_kind_index(c2->kind);
-    }
-
-    return value_diff;
-}
-
-/**
- * get_card_value - Gets the numeric value of a card
- *
- * @card: Pointer to the card
- * Return: Numeric value of the card
- */
-int get_card_value(const card_t *card)
-{
-    // Implement logic to convert the card's value to a numeric value
-    // For example, you can map "King", "Queen", "Jack", etc., to numeric values
-}
-
-/**
- * get_kind_index - Gets the index of the card kind in a predefined order
- *
- * @kind: Pointer to the kind string
- * Return: Index of the kind in the predefined order
- */
-int get_kind_index(const char *kind)
-{
-    // Implement logic to assign an index to each kind in a predefined order
-    // For example, you can use an array {"SPADE", "HEART", "CLUB", "DIAMOND"}
+	if (deck == NULL || *deck == NULL || (*deck)->next == NULL)
+		return;
+	current = *deck;
+	while (swapped != 0)
+	{
+		swapped = 0;
+		while (current->next != NULL)
+		{
+			c1 = get_val(current->card->value) + 13 * current->card->kind;
+			c2 = get_val(current->next->card->value) + 13 * current->next->card->kind;
+			if (c1 > c2)
+			{
+				swap_node(deck, current);
+				swapped = 1;
+			}
+			else
+				current = current->next;
+		}
+		if (swapped == 0)
+			break;
+		swapped = 0;
+		while (current->prev != NULL)
+		{
+			c1 = get_val(current->card->value) + 13 * current->card->kind;
+			c2 = get_val(current->prev->card->value) + 13 * current->prev->card->kind;
+			if (c1 < c2)
+			{
+				swap_node(deck, current->prev);
+				swapped = 1;
+			}
+			else
+				current = current->prev;
+		}
+	}
 }
