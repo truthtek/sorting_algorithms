@@ -1,94 +1,134 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "deck.h"
 
-typedef struct Card {
-    char suit[10];
-    int value;
-} Card;
+/**
+ * struct deck_node_s - Doubly-linked list node for a card deck
+ *
+ * @card: Pointer to the card (a string)
+ * @prev: Pointer to the previous node in the deck
+ * @next: Pointer to the next node in the deck
+ */
+typedef struct deck_node_s
+{
+    const card_t *card;
+    struct deck_node_s *prev;
+    struct deck_node_s *next;
+} deck_node_t;
 
-typedef struct DeckNode {
-    Card card;
-    struct DeckNode* next;
-} DeckNode;
+/**
+ * card_t - Typedef for struct card_s
+ */
+typedef struct card_s card_t;
 
-int compare_cards(const void* a, const void* b) {
-    const Card* card_a = (const Card*)a;
-    const Card* card_b = (const Card*)b;
+/**
+ * struct card_s - Structure representing a card
+ *
+ * @value: Value of the card (0-13, with 0 representing "King" for a joker card)
+ * @kind: Kind of the card (One of "SPADE", "HEART", "CLUB", "DIAMOND")
+ */
+struct card_s
+{
+    const char *value;
+    const char *kind;
+};
 
-    // First, compare the suits
-    int suit_cmp = strcmp(card_a->suit, card_b->suit);
-    if (suit_cmp != 0) {
-        return suit_cmp;
+/**
+ * sort_deck - Sorts a deck of cards
+ *
+ * @deck: Pointer to the head of the deck
+ */
+void sort_deck(deck_node_t **deck)
+{
+    if (deck == NULL || *deck == NULL)
+        return;
+
+    size_t deck_size = 0;
+    deck_node_t *current = *deck;
+
+    // Calculate the size of the deck
+    while (current)
+    {
+        deck_size++;
+        current = current->next;
     }
 
-    // If the suits are the same, compare the values
-    return card_a->value - card_b->value;
+    // Convert the deck to an array for sorting
+    card_t **card_array = malloc(sizeof(card_t *) * deck_size);
+    if (card_array == NULL)
+    {
+        perror("Memory allocation error");
+        exit(EXIT_FAILURE);
+    }
+
+    current = *deck;
+    for (size_t i = 0; i < deck_size; i++)
+    {
+        card_array[i] = current->card;
+        current = current->next;
+    }
+
+    // Use the qsort function to sort the card array
+    qsort(card_array, deck_size, sizeof(card_t *), compare_cards);
+
+    // Update the deck with the sorted cards
+    current = *deck;
+    for (size_t i = 0; i < deck_size; i++)
+    {
+        current->card = card_array[i];
+        current = current->next;
+    }
+
+    free(card_array);
 }
 
-void sort_deck(DeckNode** deck) {
-    // Count the number of cards in the deck
-    int card_count = 0;
-    DeckNode* current = *deck;
-    while (current != NULL) {
-        card_count++;
-        current = current->next;
+/**
+ * compare_cards - Comparison function for qsort
+ *
+ * @card1: Pointer to the first card
+ * @card2: Pointer to the second card
+ * Return: Integer less than, equal to, or greater than zero if card1
+ *         is found, respectively, to be less than, to match, or be greater
+ *         than card2.
+ */
+int compare_cards(const void *card1, const void *card2)
+{
+    card_t *c1 = *(card_t **)card1;
+    card_t *c2 = *(card_t **)card2;
+
+    // Compare values first
+    int value_diff = get_card_value(c1) - get_card_value(c2);
+
+    if (value_diff == 0)
+    {
+        // If values are equal, compare kinds
+        return get_kind_index(c1->kind) - get_kind_index(c2->kind);
     }
 
-    // Create an array to hold the cards
-    Card* cards = malloc(card_count * sizeof(Card));
-
-    // Copy the cards from the deck into the array
-    current = *deck;
-    for (int i = 0; i < card_count; i++) {
-        cards[i] = current->card;
-        current = current->next;
-    }
-
-    // Sort the array of cards
-    qsort(cards, card_count, sizeof(Card), compare_cards);
-
-    // Reconstruct the deck with the sorted cards
-    current = *deck;
-    for (int i = 0; i < card_count; i++) {
-        current->card = cards[i];
-        current = current->next;
-    }
-
-    // Free the memory allocated for the array
-    free(cards);
+    return value_diff;
 }
 
-int main() {
-    // Example usage:
-    DeckNode* deck = malloc(sizeof(DeckNode));
-    deck->card.value = 5;
-    strcpy(deck->card.suit, "Spades");
-    deck->next = malloc(sizeof(DeckNode));
-    deck->next->card.value = 2;
-    strcpy(deck->next->card.suit, "Diamonds");
-    deck->next->next = malloc(sizeof(DeckNode));
-    deck->next->next->card.value = 10;
-    strcpy(deck->next->next->card.suit, "Hearts");
-    deck->next->next->next = NULL;
+/**
+ * get_card_value - Gets the numeric value of a card
+ *
+ * @card: Pointer to the card
+ * Return: Numeric value of the card
+ */
+int get_card_value(const card_t *card)
+{
+    // Implement logic to convert the card's value to a numeric value
+    // For example, you can map "King", "Queen", "Jack", etc., to numeric values
+}
 
-    sort_deck(&deck);
-
-    // Print the sorted deck
-    DeckNode* current = deck;
-    while (current != NULL) {
-        printf("%s of %s\n", current->card.suit, current->card.value);
-        current = current->next;
-    }
-
-    // Clean up the memory
-    current = deck;
-    while (current != NULL) {
-        DeckNode* next = current->next;
-        free(current);
-        current = next;
-    }
-
-    return 0;
+/**
+ * get_kind_index - Gets the index of the card kind in a predefined order
+ *
+ * @kind: Pointer to the kind string
+ * Return: Index of the kind in the predefined order
+ */
+int get_kind_index(const char *kind)
+{
+    // Implement logic to assign an index to each kind in a predefined order
+    // For example, you can use an array {"SPADE", "HEART", "CLUB", "DIAMOND"}
 }
