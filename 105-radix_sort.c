@@ -1,79 +1,76 @@
 #include "sort.h"
 
 /**
- * get_max - Returns the maximum element in an array
- *
- * @array: Pointer to the array
- * @size: Size of the array
- *
- * Return: The maximum element
+ * radix_sort - Sorts an array of integers in ascending order using Radix Sort
+ * @array: The array to be sorted
+ * @size: Number of elements in the array
  */
-int get_max(int *array, size_t size)
+void radix_sort(int *array, size_t size)
 {
-    int max = array[0];
-    size_t i;
+    if (array == NULL || size < 2)
+        return;
 
-    for (i = 1; i < size; i++)
+    /* Find the maximum number to know the number of digits */
+    int max_num = find_max(array, size);
+
+    /* Do counting sort for every digit, starting from the least significant */
+    for (int exp = 1; max_num / exp > 0; exp *= 10)
     {
-        if (array[i] > max)
-            max = array[i];
+        counting_sort_radix(array, size, exp);
+        print_array(array, size);
     }
-
-    return max;
 }
 
 /**
- * counting_sort - Sorts an array of integers based on a specific digit using Counting sort
- *
- * @array: Pointer to the array
- * @size: Size of the array
- * @exp: The current exponent (significant digit)
+ * counting_sort_radix - Performs counting sort on an array based on a significant digit
+ * @array: The array to be sorted
+ * @size: Number of elements in the array
+ * @exp: The current significant digit (power of 10)
  */
-void counting_sort(int *array, size_t size, int exp)
+void counting_sort_radix(int *array, size_t size, int exp)
 {
     int *output = malloc(size * sizeof(int));
     int count[10] = {0};
-    size_t i;
 
     if (output == NULL)
         return;
 
-    /* Store the count of occurrences in count[] */
-    for (i = 0; i < size; i++)
+    /* Count occurrences of each digit in the current significant place */
+    for (size_t i = 0; i < size; i++)
         count[(array[i] / exp) % 10]++;
 
-    /* Calculate the cumulative count */
-    for (i = 1; i < 10; i++)
+    /* Modify count array to store the position of each digit in the output array */
+    for (int i = 1; i < 10; i++)
         count[i] += count[i - 1];
 
-    /* Build the output array */
-    for (i = size - 1; i < (size_t)-1; i--)
+    /* Build the output array by placing elements in their correct position */
+    for (int i = size - 1; i >= 0; i--)
     {
         output[count[(array[i] / exp) % 10] - 1] = array[i];
         count[(array[i] / exp) % 10]--;
     }
 
-    /* Copy the sorted elements to the original array */
-    for (i = 0; i < size; i++)
+    /* Copy the sorted output array back to the original array */
+    for (size_t i = 0; i < size; i++)
         array[i] = output[i];
 
-    /* Print the current state of the array */
-    print_array(array, size);
-
+    /* Free the dynamically allocated memory */
     free(output);
 }
 
 /**
- * radix_sort - Sorts an array of integers in ascending order using Radix sort algorithm
- *
- * @array: Pointer to the array
- * @size: Size of the array
+ * find_max - Finds the maximum number in an array
+ * @array: The array to find the maximum number from
+ * @size: Number of elements in the array
+ * Return: The maximum number in the array
  */
-void radix_sort(int *array, size_t size)
+int find_max(int *array, size_t size)
 {
-    int max = get_max(array, size);
-    size_t exp;
-
-    for (exp = 1; max / exp > 0; exp *= 10)
-        counting_sort(array, size, exp);
+    int max = array[0];
+    for (size_t i = 1; i < size; i++)
+    {
+        if (array[i] > max)
+            max = array[i];
+    }
+    return max;
 }
