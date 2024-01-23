@@ -1,90 +1,66 @@
 #include "sort.h"
 
 /**
- * bitonic_sort - Sorts an array of integers in ascending order using Bitonic Sort
- * @array: The array to be sorted
- * @size: Number of elements in the array (should be a power of 2)
+ * merge - Merges two subarrays in a bitonic sequence
+ *
+ * @array: Pointer to the array
+ * @low: Starting index of the first subarray
+ * @count: Number of elements to merge
+ * @dir: Sorting direction (1 for ascending, 0 for descending)
+ */
+void merge(int *array, size_t low, size_t count, int dir)
+{
+    if (count > 1)
+    {
+        size_t k = count / 2;
+        size_t i;
+
+        for (i = low; i < low + k; i++)
+        {
+            if ((array[i] > array[i + k]) == dir)
+            {
+                int temp = array[i];
+                array[i] = array[i + k];
+                array[i + k] = temp;
+                print_array(array, count);
+            }
+        }
+
+        merge(array, low, k, dir);
+        merge(array, low + k, k, dir);
+    }
+}
+
+/**
+ * bitonic_sort_recursive - Recursive function to perform Bitonic sort
+ *
+ * @array: Pointer to the array
+ * @low: Starting index of the subarray
+ * @count: Number of elements in the subarray
+ * @dir: Sorting direction (1 for ascending, 0 for descending)
+ */
+void bitonic_sort_recursive(int *array, size_t low, size_t count, int dir)
+{
+    if (count > 1)
+    {
+        size_t k = count / 2;
+
+        bitonic_sort_recursive(array, low, k, !dir);
+        bitonic_sort_recursive(array, low + k, k, dir);
+        merge(array, low, count, dir);
+    }
+}
+
+/**
+ * bitonic_sort - Sorts an array of integers in ascending order using Bitonic sort algorithm
+ *
+ * @array: Pointer to the array
+ * @size: Size of the array
  */
 void bitonic_sort(int *array, size_t size)
 {
-    if (array == NULL || size < 2 || !is_power_of_two(size))
+    if (array == NULL || size < 2)
         return;
 
-    bitonic_recursive_sort(array, size, 1);
-}
-
-/**
- * bitonic_recursive_sort - Recursively performs Bitonic Sort
- * @array: The array to be sorted
- * @size: Number of elements in the array
- * @dir: Sorting direction (1 for ascending, 0 for descending)
- */
-void bitonic_recursive_sort(int *array, size_t size, int dir)
-{
-    if (size > 1)
-    {
-        size_t mid = size / 2;
-
-        /* Sort in ascending order */
-        bitonic_recursive_sort(array, mid, 1);
-
-        /* Sort in descending order */
-        bitonic_recursive_sort(array + mid, mid, 0);
-
-        /* Merge the two halves */
-        bitonic_merge(array, size, dir);
-    }
-}
-
-/**
- * bitonic_merge - Merges two halves of an array in the given direction
- * @array: The array to be merged
- * @size: Number of elements in the array
- * @dir: Sorting direction (1 for ascending, 0 for descending)
- */
-void bitonic_merge(int *array, size_t size, int dir)
-{
-    if (size > 1)
-    {
-        size_t k, j;
-
-        /* Bitonic sequence generation loop */
-        for (k = size / 2; k > 0; k /= 2)
-        {
-            /* Bitonic merge loop */
-            for (j = 0; j < size; j++)
-            {
-                int bitonic_dir = (j / k) % 2;
-
-                if ((bitonic_dir == dir) && (array[j] > array[j + k]))
-                {
-                    /* Swap elements if not in the desired order */
-                    swap(&array[j], &array[j + k]);
-                    print_array(array, size);
-                }
-            }
-        }
-    }
-}
-
-/**
- * swap - Swaps two elements in an array
- * @a: Pointer to the first element
- * @b: Pointer to the second element
- */
-void swap(int *a, int *b)
-{
-    int temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
-/**
- * is_power_of_two - Checks if a number is a power of two
- * @n: The number to be checked
- * Return: 1 if true, 0 if false
- */
-int is_power_of_two(size_t n)
-{
-    return (n > 0 && (n & (n - 1)) == 0);
+    bitonic_sort_recursive(array, 0, size, 1);
 }
