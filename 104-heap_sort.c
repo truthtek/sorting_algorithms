@@ -1,78 +1,59 @@
 #include "sort.h"
 
 /**
- * heap_sort - Sorts an array of integers in ascending order using Heap Sort
- * @array: The array to be sorted
- * @size: Number of elements in the array
+ * sift_down - Performs the sift-down operation on a heap
+ *
+ * @array: Pointer to the array
+ * @size: Size of the heap
+ * @root: Root index of the heap
+ * @end: Last index of the heap
  */
-void heap_sort(int *array, size_t size)
+void sift_down(int *array, size_t size, size_t root, size_t end)
 {
-    if (array == NULL || size < 2)
-        return;
-
-    /* Build a max heap */
-    build_max_heap(array, size);
-
-    /* Extract elements from the heap one by one */
-    for (size_t i = size - 1; i > 0; i--)
-    {
-        /* Swap the root (maximum value) with the last element */
-        swap(&array[0], &array[i]);
-        print_array(array, size);
-
-        /* Restore the max heap property */
-        heapify(array, i, 0);
-    }
-}
-
-/**
- * build_max_heap - Builds a max heap from the given array
- * @array: The array to be converted to a max heap
- * @size: Number of elements in the array
- */
-void build_max_heap(int *array, size_t size)
-{
-    for (int i = size / 2 - 1; i >= 0; i--)
-        heapify(array, size, i);
-}
-
-/**
- * heapify - Maintains the max heap property by fixing a single violation
- * @array: The array representing the max heap
- * @size: Number of elements in the array
- * @root: The root index of the subtree
- */
-void heapify(int *array, size_t size, size_t root)
-{
-    size_t largest = root;
+    size_t max = root;
     size_t left_child = 2 * root + 1;
     size_t right_child = 2 * root + 2;
 
-    if (left_child < size && array[left_child] > array[largest])
-        largest = left_child;
+    if (left_child < end && array[left_child] > array[max])
+        max = left_child;
 
-    if (right_child < size && array[right_child] > array[largest])
-        largest = right_child;
+    if (right_child < end && array[right_child] > array[max])
+        max = right_child;
 
-    if (largest != root)
+    if (max != root)
     {
-        /* Swap the root with the largest element */
-        swap(&array[root], &array[largest]);
-        print_array(array, size);
+        int temp = array[root];
+        array[root] = array[max];
+        array[max] = temp;
 
-        /* Recursively heapify the affected subtree */
-        heapify(array, size, largest);
+        print_array(array, size);
+        sift_down(array, size, max, end);
     }
 }
 
 /**
- * swap - Swaps two elements in an array
- * @a: Pointer to the first element
- * @b: Pointer to the second element
+ * heap_sort - Sorts an array of integers in ascending order using Heap sort algorithm
+ *
+ * @array: Pointer to the array
+ * @size: Size of the array
  */
-void swap(int *a, int *b)
+void heap_sort(int *array, size_t size)
 {
-    int temp = *a;
-    *a = *b;
-    *b = temp;
+    size_t i;
+
+    if (array == NULL || size < 2)
+        return;
+
+    for (i = size / 2; i > 0; i--)
+        sift_down(array, size, i - 1, size);
+
+    for (i = size - 1; i > 0; i--)
+    {
+        int temp = array[0];
+        array[0] = array[i];
+        array[i] = temp;
+
+        print_array(array, size);
+        sift_down(array, size, 0, i);
+    }
 }
