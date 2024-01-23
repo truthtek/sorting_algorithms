@@ -27,7 +27,7 @@ sift_down(array, size, max, end);
 }
 }
 /**
- * heap_sort - Sorts an array of integers in ascending order using Heap sort algorithm
+ * heap_sort - Sorts an array of integers in order using Heap sort algorithm
  *
  * @array: Pointer to the array
  * @size: Size of the array
