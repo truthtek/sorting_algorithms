@@ -13,7 +13,7 @@ int get_val(const char *str)
 {
 int i;
 char *array[13] = {"Ace", "2", "3", "4", "5", "6", "7", "8", "9",
-                   "10", "Jack", "Queen", "King"};
+"10", "Jack", "Queen", "King"};
 
 for (i = 0; i < 13; i++)
 {
