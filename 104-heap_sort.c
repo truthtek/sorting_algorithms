@@ -39,7 +39,8 @@ if (array == NULL || size < 2)
 return;
 for (i = size / 2; i > 0; i--)
 sift_down(array, size, i - 1, size);
-for (i = size - 1; i > 0; i--)    {
+for (i = size - 1; i > 0; i--)
+{
 int temp = array[0];
 array[0] = array[i];
 array[i] = temp;
