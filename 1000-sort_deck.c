@@ -13,7 +13,8 @@ int get_val(const char *str)
 {
 int i;
 char *array[13] = {"Ace", "2", "3", "4", "5", "6", "7", "8", "9",
-"10", "Jack", "Queen", "King"};
+                   "10", "Jack", "Queen", "King"};
+
 for (i = 0; i < 13; i++)
 {
 if (strcmp(str, array[i]) == 0)
@@ -23,6 +24,7 @@ return (i);
 }
 exit(1);
 }
+
 /**
 * swap_node - swaps a node with the next node
 * @list: double pointer to the deck
@@ -64,6 +66,7 @@ while (current->next != NULL)
 c1 = get_val(current->card->value) + 13 * current->card->kind;
 c2 = get_val(current->next->card->value) + 13 * current->next->card->kind;
 if (c1 > c2)
+{
 swap_node(deck, current);
 swapped = 1;
 }
@@ -73,10 +76,12 @@ current = current->next;
 if (swapped == 0)
 break;
 swapped = 0;
-while (current->prev != NULL)        {
+while (current->prev != NULL)
+{
 c1 = get_val(current->card->value) + 13 * current->card->kind;
 c2 = get_val(current->prev->card->value) + 13 * current->prev->card->kind;
-if (c1 < c2)            {
+if (c1 < c2)
+{
 swap_node(deck, current->prev);
 swapped = 1;
 }
